@@ -7,4 +7,3 @@ import plotly.graph_objects as go
 
 #Read
 df = pd.read_excel("Superstore.xlsx")
-
