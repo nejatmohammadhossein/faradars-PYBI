@@ -67,3 +67,72 @@ with col4:
         """,unsafe_allow_html=True,
     )
     st.plotly_chart(fig, use_container_width=True)
+key1 = 'selectbox1'
+key2 = 'selectbox2'
+with col3:
+    
+    df['year'] = df["Order Date"].dt.year
+    df['month'] = df["Order Date"].dt.month
+    years = sorted(df["year"].unique())
+    categories = sorted(df["Category"].unique())
+    years.insert(0,'همه سال ها')
+    categories.insert(0,'همه گروه های محصول')
+    st.markdown('<p class="chart_title">فروش ماهانه</p>',unsafe_allow_html=True)
+    col31,col32 = st.columns([0.5,0.5])
+    with col31:
+        selected_year = st.selectbox('سال را انتخاب کنید',years,key = key1)
+    with col32:
+        selected_category = st.selectbox('گروه محصول را انتخاب کنید',categories,key = key2)
+    
+    if selected_year != 'همه سال ها':
+        filtered_df = df[df["year"] == selected_year]
+    elif selected_category == 'همه گروه های محصول':
+        filtered_df = df
+    if selected_category != 'همه گروه های محصول':
+        filtered_df = filtered_df[filtered_df["Category"] == selected_category]
+    elif selected_year == 'همه سال ها':
+        filtered_df = df
+    result = filtered_df.groupby(by=filtered_df["month"])["Sales"].sum().reset_index()
+    
+    month_2 = ["ژانویه", "فوریه", "مارس", "آوریل", "مه", "ژوئن",
+          "ژوییه", "اوت", "سپتامبر", "اکتبر", "نوامبر", "دسامبر"]
+    result["month2"] = month_2
+    print(result)
+    fig = px.line(result, x="month2",y="Sales", 
+                 #labels={"Sales":"فروش","Category":"گروه محصولات"},
+                 #title='فروش سالانه',
+                 hover_data=["Sales"],
+                 height=500)
+    fig.update_layout(
+        #title='فروش سالانه',
+        xaxis_title='ماه',
+        yaxis_title='فروش',
+        #font=dict(family="tahoma"),
+        xaxis=dict(
+            title=dict(
+                font=dict(
+                    family="tahoma",
+                    color="blue"
+                )
+            ),
+            tickfont=dict(
+                family="tahoma",
+                color="blue"
+            )
+        ),
+        yaxis=dict(
+            title_standoff=50,
+            title=dict(
+                font=dict(
+                    family="tahoma",
+                    color="blue"
+                )
+            ),
+            tickfont=dict(
+                family="tahoma",
+                color="blue"
+            )
+        )
+    )   
+    
+    st.plotly_chart(fig, use_container_width=True)
