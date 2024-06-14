@@ -25,6 +25,7 @@ html_title="""
     <center><h1 class="title_test">آموزش هوش تجاری داشبورد فروش</h1></center>"""
 with col1:
     st.markdown(html_title,unsafe_allow_html=True)
+st.divider()
 col3, col4 = st.columns([0.45,0.45])
 with col4:
     df['Order Date'] = pd.to_datetime(df['Order Date'])
@@ -69,6 +70,7 @@ with col4:
     st.plotly_chart(fig, use_container_width=True)
 key1 = 'selectbox1'
 key2 = 'selectbox2'
+key3 = 'selectbox3'
 with col3:
     
     df['year'] = df["Order Date"].dt.year
@@ -136,3 +138,67 @@ with col3:
     )   
     
     st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
+df['year'] = df["Order Date"].dt.year
+years = sorted(df['year'].unique())
+years.insert(0,"همه سال ها")
+selected_years = st.multiselect("سالها را انتخاب کنید",
+                                years, default ="همه سال ها",
+                                key = key3)
+if "همه سال ها" in selected_years:
+    filtered_df =df
+else:
+    filtered_df = df[df["year"].isin(selected_years)]
+result1 = filtered_df.groupby(by="State")[["Sales","Quantity"]].sum().reset_index()
+#print(result1)
+fig3 = go.Figure()
+fig3.add_trace(go.Bar(x=result1["State"],
+                      y=result1["Sales"],
+                      name="فروش دلاری"))
+fig3.add_trace(go.Scatter(x=result1["State"],y=result1["Quantity"],
+                          mode="lines",yaxis="y2",
+                          name="فروش مقداری"))
+fig3.update_layout(
+    xaxis_title='ایالت',
+    yaxis_title=' فروش دلاری',
+        #font=dict(family="tahoma"),
+    xaxis=dict(
+        title=dict(
+            font=dict(
+                family="tahoma",
+                color="blue"
+            )
+        ),
+        tickfont=dict(
+            family="tahoma",
+            color="blue"
+        ), title_standoff=100
+    ),
+    yaxis=dict(
+        title=dict(
+            font=dict(
+                family="tahoma",
+                color="blue"
+            )
+        ),
+        tickfont=dict(
+            family="tahoma",
+            color="blue"
+        ), title_standoff=50
+    ),
+    yaxis2=dict(overlaying="y",side="right",
+                title=dict(text="فروش مقداری",
+                    font=dict(
+                        family="tahoma",
+                        color="blue"
+                    )
+                ),title_standoff=50),
+    legend=dict(x=1,y=1.5),
+    template="gridon"
+)
+_,col6 = st.columns([0.00001,1])
+with col6:
+    st.plotly_chart(fig3,use_container_width=True)
+
