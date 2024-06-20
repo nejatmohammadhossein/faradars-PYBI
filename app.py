@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 import datetime
 from PIL import Image
 import plotly.express as px
@@ -20,6 +21,16 @@ html_title="""
     font_weight:bold;
     border-radius:6px;
     font-family: 'B Titr'
+    }
+    table{
+    width:50%;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+    }
+    th,td{
+    text-align:center;
+    padding:8px;
     }
     </style>
     <center><h1 class="title_test">آموزش هوش تجاری داشبورد فروش</h1></center>"""
@@ -201,4 +212,35 @@ fig3.update_layout(
 _,col6 = st.columns([0.00001,1])
 with col6:
     st.plotly_chart(fig3,use_container_width=True)
+st.divider()
+_,col7 = st.columns([0.00001,1])
+treemap = df[["Region","State","City","Sales"]].groupby(by=["Region","State","City"])["Sales"].sum().reset_index()
+#print(treemap)
+fig4 = px.treemap(treemap,path=["Region","State","City"],
+                  values="Sales",
+                  hover_data=["Sales"],color="City",
+                  height=700,width=600)
+with col7:
+    st.markdown('<p class="chart_title">فروش در تقسیمات جغرافیایی</p>',unsafe_allow_html=True)
+    st.plotly_chart(fig4,use_container_width=True)
+
+_,view,d = st.columns([0.5,0.55,0.35])
+with view:
+    def to_excel(df):
+        output = BytesIO()
+        writer = pd.ExcelWriter(output,engine='openpyxl')
+        df.to_excel(writer,index=False,sheet_name="Treemap")
+        writer.save()
+        processed_data = output.getvalue()
+        return processed_data
+    table_html = treemap.to_html()
+    xlsx_data = to_excel(treemap)
+    with st.expander("نمایش"):
+        st.download_button(
+            label="دانلود داده",
+            data=xlsx_data,
+            file_name="Treemap.xlsx"
+        )
+        st.markdown('<p class="chart_title">داده فروش در تقسیمات جغرافیایی</p>',unsafe_allow_html=True)
+        st.markdown(table_html,unsafe_allow_html=True)
 
